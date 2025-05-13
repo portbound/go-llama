@@ -46,11 +46,6 @@ func (c *Client) HandleRequest(req *Chat) (strings.Builder, error) {
 			return fullReply, err
 		}
 
-		// Optional: filter empty lines
-		if len(bytes.TrimSpace(line)) == 0 {
-			continue
-		}
-
 		var chunk struct {
 			Message Message `json:"message"`
 			Done    bool    `json:"done"`

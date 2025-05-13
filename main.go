@@ -1,53 +1,73 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/tokenAPIguy/go-llama/api"
 )
 
 // Temporary env variables
-const chatModel = "gemma3:1b"
 const context = "This is a test environment"
 const url = "http://localhost:11434/api/chat"
 
 func main() {
 	// Setting up env
-	reader := bufio.NewReader(os.Stdin)
-	chat := api.NewChat(chatModel, context)
+	chatModels := make(map[string]string)
+	chatModels["Gemma3"] = "gemma3:1b"
+	// 	chat := api.NewChat(chatModel, context)
+	chat := api.Chat{}
 	client := &api.Client{BaseURL: url}
+	var lines string
 
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Model").
+				Description("Select a model for the chat").
+				Options(
+					huh.NewOption("Gemma3", chatModels["Gemma3"]),
+				).
+				Value(&chat.Model),
+
+			huh.NewInput().
+				Title("Context").
+				Description("Provide any additional context for the chat.").
+				Value(&chat.Context.Content),
+		),
+	)
+	err := form.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Starting REPL
 	for {
-		fmt.Print(">> User << ")
-		var lines []string
-
-		for {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				fmt.Println("Error: ", err)
-				return
-			}
-
-			line = strings.TrimRight(line, "\r\n")
-			if line == "" {
-				break
-			}
-
-			lines = append(lines, line)
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewText().
+					Title("Prompt").
+					CharLimit(1000).
+					Value(&lines),
+			),
+		)
+		err := form.Run()
+		if err != nil {
+			fmt.Println(err)
 		}
 
 		// Build user msg
 		chat.Messages = append(chat.Messages, api.Message{
 			Role:    "user",
-			Content: strings.Join(lines, "\n"),
+			Content: chat.Context.Content,
+		})
+
+		chat.Messages = append(chat.Messages, api.Message{
+			Role:    "user",
+			Content: lines,
 		})
 
 		// Send
-		reply, err := client.HandleRequest(chat)
+		reply, err := client.HandleRequest(&chat)
 		if err != nil {
 			fmt.Println("Failed to handle client request:", err)
 			return
@@ -61,4 +81,5 @@ func main() {
 
 		fmt.Printf("Messages in Slice: %d", len(chat.Messages))
 	}
+
 }

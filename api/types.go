@@ -3,6 +3,7 @@ package api
 type Chat struct {
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
+	Context  Message   `json:"context"`
 	Stream   bool      `json:"stream"`
 }
 
