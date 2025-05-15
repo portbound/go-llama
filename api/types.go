@@ -1,6 +1,7 @@
 package api
 
 type Chat struct {
+	Name     string    `json:"name"`
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
 	Context  Message   `json:"context"`

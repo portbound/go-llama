@@ -34,6 +34,7 @@ func (c *Client) HandleRequest(req *Chat) (strings.Builder, error) {
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(req.Messages[len(req.Messages)-1])
 	reader := bufio.NewReader(resp.Body)
 	fmt.Printf(">> %s << ", req.Model)
 
