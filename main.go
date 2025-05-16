@@ -41,20 +41,20 @@ func main() {
 	// Starting REPL
 	var lines string
 
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewText().
-				Title("Prompt").
-				CharLimit(1000).
-				Value(&lines),
-		),
-	)
-	err = form.Run()
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	for {
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewText().
+					Title("Prompt").
+					CharLimit(10000).
+					Value(&lines),
+			),
+		)
+		err = form.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		// Build user msg
 		chat.Messages = append(chat.Messages, api.Message{
 			Role:    "user",
