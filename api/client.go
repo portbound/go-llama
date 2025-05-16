@@ -34,10 +34,13 @@ func (c *Client) HandleRequest(req *Chat) (strings.Builder, error) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(req.Messages[len(req.Messages)-1])
-	reader := bufio.NewReader(resp.Body)
-	fmt.Printf(">> %s << ", req.Model)
+	// Print User message again
+	fmt.Println(">> user:")
+	fmt.Println(req.Messages[len(req.Messages)-1].Content)
 
+	fmt.Printf("\n>> %s:\n", req.Model)
+
+	reader := bufio.NewReader(resp.Body)
 	for {
 		line, err := reader.ReadBytes('\n')
 		if err != nil {
