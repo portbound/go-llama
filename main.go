@@ -77,7 +77,6 @@ func main() {
 
 		err = chat.SaveChat()
 		if err != nil {
-			fmt.Println("here")
 			fmt.Println(err)
 		}
 

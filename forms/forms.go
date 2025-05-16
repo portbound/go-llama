@@ -4,18 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/charmbracelet/huh"
 	"github.com/tokenAPIguy/go-llama/api"
 )
 
 func NewChat(chat *api.Chat) error {
-	chatModels := make(map[string]string)
-	chatModels["qwen2.5-coder:latest"] = "qwen2.5-coder"
+	// Lookup installed models
+	var path string
+	if runtime.GOOS == "windows" {
+		path = filepath.Join(os.Getenv("USERPROFILE"), ".ollama", "models", "manifests", "registry.ollama.ai", "library")
+	} else {
+		home, _ := os.UserHomeDir()
+		path = filepath.Join(home, ".ollama", "models", "manifests", "registry.ollama.ai", "library")
+	}
 
+	models, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	// Append installed models to form select list
 	opts := []huh.Option[string]{}
-	for label, val := range chatModels {
-		opts = append(opts, huh.NewOption(label, val))
+	for _, m := range models {
+		//TODO: we're listing subdirs here, so we will want to add support later in case we have more than one subtype of model. Need to check the depth of models/ and if > 1 loop through those to get names
+		name := m.Name()
+		opts = append(opts, huh.NewOption(name, name))
 	}
 
 	modelSelectForm := huh.NewForm(
@@ -28,11 +44,11 @@ func NewChat(chat *api.Chat) error {
 
 			huh.NewInput().
 				Title("Title").
-				Description("Optional: Title of the chat.\nWill default to yyyy_mm_dd_model").
+				Description("Optional: If not provided the title will default to yyyy_mm_dd_model").
 				Value(&chat.Name),
 		),
 	)
-	err := modelSelectForm.Run()
+	err = modelSelectForm.Run()
 	if err != nil {
 		return err
 	}
@@ -40,13 +56,14 @@ func NewChat(chat *api.Chat) error {
 	return nil
 }
 
-func ResumeChat(chat *api.Chat, entries []os.DirEntry) error {
-	fileNames := []huh.Option[string]{}
-	for _, entry := range entries {
-		if !entry.IsDir() { // checking to make sure we don't list subdirs
-			name := entry.Name()
+func ResumeChat(chat *api.Chat, chats []os.DirEntry) error {
+	fileNames := []huh.Option[string]{
+		huh.NewOption("New Chat", ""),
+	}
+	for _, c := range chats {
+		if !c.IsDir() { // checking to make sure we only list files
+			name := c.Name()
 			fileNames = append(fileNames, huh.NewOption(name, name))
-			fileNames = append(fileNames, huh.NewOption("", "New Chat"))
 		}
 	}
 	resumeChatForm := huh.NewForm(
@@ -61,6 +78,11 @@ func ResumeChat(chat *api.Chat, entries []os.DirEntry) error {
 	err := resumeChatForm.Run()
 	if err != nil {
 		return err
+	}
+
+	// Early return if someone doesn't actually pick a chat
+	if chat.Name == "" {
+		return nil
 	}
 
 	data, err := os.ReadFile("chats/" + chat.Name)
