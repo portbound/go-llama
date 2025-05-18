@@ -90,7 +90,7 @@ func ResumeChat(chat *api.Chat, chats []os.DirEntry) error {
 		return fmt.Errorf("Failed to read chat log: %w", err)
 	}
 
-	err = json.Unmarshal(data, &chat.Messages)
+	err = json.Unmarshal(data, &chat)
 	if err != nil {
 		return fmt.Errorf("Failed to parse JSON: %w", err)
 	}

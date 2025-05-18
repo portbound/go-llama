@@ -58,6 +58,7 @@ func main() {
 	}
 
 	for {
+
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewText().
@@ -73,19 +74,21 @@ func main() {
 		}
 
 		// Build user msg
-		fmt.Println(chat.Messages)
 		chat.Messages = append(chat.Messages, api.Message{
 			Role:    "user",
 			Content: lines,
 		})
 
-		fmt.Println(chat.Messages)
 		// Send
 		done := make(chan struct{})
 		var resp *http.Response
 
 		go func() {
 			resp, err = client.HandleRequest(chat)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			close(done)
 		}()
 
