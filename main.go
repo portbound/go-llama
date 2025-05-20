@@ -14,6 +14,8 @@ import (
 )
 
 const url = "http://localhost:11434/api/chat"
+const cyan = "\033[33m"
+const reset = "\033[0m"
 
 func main() {
 	chat, err := initializeChat(&api.Chat{Stream: false})
@@ -29,8 +31,14 @@ func main() {
 	// Display chats from history
 	if len(chat.Messages) > 0 {
 		for _, msg := range chat.Messages {
-			fmt.Printf(">> %s:\n", msg.Role)
-			fmt.Printf("%s\n\n", msg.Content)
+			if msg.Role == "assistant" {
+				fmt.Printf(cyan+">> %s:\n"+reset, chat.Model)
+				fmt.Printf(cyan+"%s\n\n"+reset, msg.Content)
+			}
+			if msg.Role == "user" {
+				fmt.Printf(">> %s:\n", msg.Role)
+				fmt.Printf("%s\n\n", msg.Content)
+			}
 		}
 	}
 
@@ -96,8 +104,8 @@ func main() {
 			Role:    "assistant",
 			Content: assistantMsg,
 		})
-		fmt.Println(">> assistant:")
-		fmt.Printf("%s\n\n", assistantMsg)
+		fmt.Printf(cyan+">> %s:\n"+reset, chat.Model)
+		fmt.Printf(cyan+"%s\n\n"+reset, assistantMsg)
 
 		// Reset prompt window
 		lines = ""
