@@ -3,6 +3,7 @@ package forms
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,9 +30,17 @@ func NewChat(chat *api.Chat) error {
 	// Append installed models to form select list
 	opts := []huh.Option[string]{}
 	for _, m := range models {
-		//TODO: we're listing subdirs here, so we will want to add support later in case we have more than one subtype of model. Need to check the depth of models/ and if > 1 loop through those to get names
-		name := m.Name()
-		opts = append(opts, huh.NewOption(name, name))
+		versions, err := ioutil.ReadDir(filepath.Join(path, m.Name()))
+		if err != nil {
+			return err
+		}
+		for _, v := range versions {
+
+			name := fmt.Sprintf("%s:%s", m.Name(), v.Name())
+			opts = append(opts, huh.NewOption(name, name))
+		}
+		// 		name := m.Name()
+		// 		opts = append(opts, huh.NewOption(name, name))
 	}
 
 	modelSelectForm := huh.NewForm(
