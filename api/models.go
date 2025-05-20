@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -30,7 +31,8 @@ func (c *Chat) SaveChat() error {
 		return err
 	}
 
-	name := fmt.Sprintf("chats/%s", c.Name)
+	cleanedName := strings.TrimSpace(c.Name)
+	name := fmt.Sprintf("chats/%s", cleanedName)
 	f := fmt.Sprintf("%s.json", name)
 	err = os.WriteFile(f, jsonData, 0644)
 	if err != nil {
