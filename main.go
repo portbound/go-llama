@@ -18,10 +18,11 @@ const cyan = "\033[33m"
 const reset = "\033[0m"
 
 func main() {
-	chat, err := initializeChat(&api.Chat{Stream: false})
+	chat := &api.Chat{Stream: false}
+	err := initializeChat(chat)
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	// Start REPL
@@ -112,11 +113,11 @@ func main() {
 	}
 }
 
-func initializeChat(chat *api.Chat) (*api.Chat, error) {
+func initializeChat(chat *api.Chat) error {
 	// Check for existing chats
 	entries, err := CheckDir("chats")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(entries) > 0 {
@@ -129,9 +130,9 @@ func initializeChat(chat *api.Chat) (*api.Chat, error) {
 
 		// offer to resume an existing chat
 		if len(files) != 0 {
-			err := forms.ResumeChat(chat, files)
+			err = forms.ResumeChat(chat, files)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
@@ -140,11 +141,11 @@ func initializeChat(chat *api.Chat) (*api.Chat, error) {
 	if chat.Name == "" {
 		err := forms.NewChat(chat)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
 	}
 
-	return chat, nil
+	return nil
 }
 
 func readResponse(resp *http.Response) (string, error) {
