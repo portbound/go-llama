@@ -1,18 +1,32 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
 func CheckDir(dir string) ([]os.DirEntry, error) {
 	// If dir/ does not exist, create it
-	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
-		err = os.Mkdir(dir, 0755)
+	exePath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	exeDir := filepath.Dir(exePath)
+
+	// Construct path to go-llama/<subdir>
+	path := filepath.Join(exeDir, dir)
+
+	fmt.Println(path)
+	if info, err := os.Stat(path); err != nil || !info.IsDir() {
+		err = os.MkdirAll(path, 0755)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// Return any files
-	entries, err := os.ReadDir(dir)
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
