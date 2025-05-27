@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -17,7 +16,6 @@ func CheckDir(dir string) ([]os.DirEntry, error) {
 	// Construct path to go-llama/<subdir>
 	path := filepath.Join(exeDir, dir)
 
-	fmt.Println(path)
 	if info, err := os.Stat(path); err != nil || !info.IsDir() {
 		err = os.MkdirAll(path, 0755)
 		if err != nil {
